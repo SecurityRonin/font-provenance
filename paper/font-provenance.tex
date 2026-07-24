@@ -1,0 +1,1200 @@
+% =============================================================================
+% Bundled Fonts and Default-Typeface Changes in Major Operating Systems,
+% Office Suites, and Document Tooling: A Provenance Timeline Reference
+% XeLaTeX + xeCJK, two-column  (Overleaf: set the compiler to XeLaTeX)
+% Build: xelatex -> bibtex -> xelatex x2   (see Makefile)
+% CJK fonts required (macOS system fonts): Songti TC (main), Hiragino Mincho ProN
+% (Japanese, via \ja), Apple SD Gothic Neo (Korean, via \ko).
+% =============================================================================
+\documentclass[10pt,a4paper]{article}
+
+% --- Packages ----------------------------------------------------------------
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{Songti TC}
+\setCJKsansfont{Songti TC}
+\setCJKmonofont{Songti TC}
+\newCJKfontfamily\japanesefont{Hiragino Mincho ProN}
+\newCJKfontfamily\koreanfont{Apple SD Gothic Neo}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xurl}
+\usepackage{authblk}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc,arrows.meta,fit,backgrounds}
+\usepackage{textcomp}
+\usepackage{adjustbox}
+\usepackage[framemethod=tikz]{mdframed}
+
+\setlength{\columnsep}{18pt}
+\setlength{\emergencystretch}{3em}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=green!50!black,
+    urlcolor=blue!60!black,
+}
+
+% --- Script helpers ----------------------------------------------------------
+% Songti TC (main CJK) covers Simplified and Traditional Chinese. Japanese kana
+% and Korean hangul are not in Songti TC, so per-script macros switch fonts.
+\newcommand{\ja}[1]{{\japanesefont #1}}
+\newcommand{\ko}[1]{{\koreanfont #1}}
+\newcommand{\code}[1]{\texttt{#1}}
+% Japanese title held in a macro so it renders in the Japanese font from the .bbl.
+\newcommand{\ichitarotitle}{\ja{「一太郎2021」2月5日発売}}
+
+% --- Aeon-Timeline-style lane construct --------------------------------------
+% A vertical spine (tikz rule via the array `!{}' separator) with year nodes on
+% the left and event labels on the right. Robust in one- or two-column context;
+% pass an optional label-column width for figure* (full-width) timelines.
+\definecolor{fpspine}{HTML}{1B9E8A}
+\newcommand{\fpyear}[1]{%
+  \tikz[baseline=(fpy.base)]{\node[fill=fpspine,text=white,rounded corners=2pt,
+    inner sep=2.5pt,font=\footnotesize\bfseries] (fpy) {#1};}}
+\newenvironment{fptimeline}[1][0.80\textwidth]{%
+  \renewcommand{\arraystretch}{1.3}%
+  \begin{tabular}{@{}r@{\hspace{6pt}}!{{\color{fpspine}\vrule width 1.3pt}}@{\hspace{9pt}}>{\raggedright\arraybackslash}p{#1}@{}}}%
+  {\end{tabular}}
+\newcommand{\fpevent}[2]{\fpyear{#1} & #2\\}
+
+% --- Title -------------------------------------------------------------------
+\title{%
+  \textbf{Bundled Fonts and Default-Typeface Changes in Major Operating Systems,
+  Office Suites, and Document Tooling:}\\[4pt]
+  \large A Provenance Timeline Reference%
+}
+\author{Albert Hui}
+\date{July 24, 2026 \\[2pt] \small (working paper)}
+
+% =============================================================================
+\begin{document}
+
+\twocolumn[
+\maketitle
+
+\begin{abstract}
+The set of fonts bundled with an operating system or application, and the
+\emph{default} typeface each release binds to its user interface and to new
+documents, change at datable public releases. Those dates bound the earliest time
+an artifact could have acquired the font through ordinary public channels
+(pre-release access---foundries, beta programs, OEMs---is the caveat), and
+default-font choices identify candidate producing software. This paper assembles
+verified timelines of (1)~default system/UI font changes and bundled-font
+milestones in Windows, macOS, iOS, Android, and desktop Linux, including per-script
+CJK lanes (Simplified Chinese, Traditional Chinese, Hong Kong, Japanese, Korean);
+(2)~default document-font changes in major office suites (Microsoft Office
+including its East Asian editions, OpenOffice.org/LibreOffice, WPS Office, Google
+Docs, Apple iWork, JustSystems Ichitaro, Hancom Office); (3)~default and
+substitution fonts in PDF and scan/OCR tooling (Adobe Acrobat/Reader, PaperPort and
+OCR peers); and (4)~default-font and font-substitution behavior in
+document-generation libraries (the Aspose suites and peers). Events are cited to the
+most authoritative sources located, with hotlinked URLs, and citations are annotated
+with verification tiers; where only secondary or incomplete sourcing was found, the
+citation and the claim say so, and claims that could not be adequately verified are
+labeled UNCERTAIN.
+\end{abstract}
+\vspace{12pt}
+]
+
+% === §1 Introduction =========================================================
+\section{Introduction}\label{sec:intro}
+
+A font cannot appear in a document before the font is available. The canonical
+demonstration is the Calibri affair of 2017 (``Fontgate''), in which property
+documents represented as executed in \textbf{February 2006} were typeset in
+Calibri---a font that first became publicly obtainable with Office 2007 Beta 2 on
+2006-05-23 and generally available with Windows Vista and Office 2007 on
+2007-01-30. The February 2006 dating is the decisive detail: the documents predate
+even the public beta, which featured in Pakistan's Supreme Court proceedings against
+the Sharif family.\cite{intro-fontgate} Beyond first-availability bounds,
+\emph{default} fonts carry a second, weaker signal: they identify the factory
+configuration of candidate producing software. This reasoning is asymmetric. A font
+used before its earliest public availability is decisive (an anachronism); a
+default-font match is only \emph{consistent with} a toolchain, never proof of it,
+because users change defaults, templates override them, and fonts travel. Read this
+way: a PDF whose text layer is set in Fanwood, accompanied by Aspose's
+characteristic substitution warning or metadata, is strong evidence of Aspose.Words
+rendering on a font-starved Linux host (\S\ref{sec:libraries}); text in Adobe Sans
+MM is consistent with Acrobat rendering a PDF whose fonts were missing
+(\S\ref{sec:pdf}); a Simplified-Chinese document body in 等线 (DengXian) cannot
+predate 2015-07-29 (the font's first ship, in Windows 10) and is consistent with the
+Office 2016-era Simplified-Chinese default path (\S\ref{sec:msoffice}).
+
+This paper is a dated, sourced reference for such reasoning. Each platform or product
+gets an Aeon-Timeline-style lane view plus an event register with citations.
+
+% === §2 Method and evidence tiers ============================================
+\section{Method and Evidence Tiers}\label{sec:method}
+
+\paragraph{Search protocol.} Research was conducted in July 2026 by parallel
+per-platform investigations, each proceeding: (1)~general web search to locate
+candidate sources for each event; (2)~preference-ordered source selection---vendor
+primary documentation (Microsoft Learn/Typography, Apple Newsroom/Support/Developer,
+Android Developers Blog, project release notes and bug trackers, vendor API
+references), then institutional records (Computer History Museum, SEC EDGAR), then
+first-person designer accounts (Folklore.org; Ken Lunde's CJKV writings treated as
+near-primary), then reputable secondary/encyclopedic sources; (3)~fetch-and-confirm
+verification of each cited URL against the specific claim (a 200 response serving
+unrelated content does not count as verification); (4)~Wayback Machine fallback for
+dead originals. Searches used general-purpose web search engines plus direct
+navigation of the vendor documentation trees named above; fetching used both plain
+HTTP clients and rendering fetchers (several vendor sites are JavaScript-routed or
+bot-hostile, noted per citation). Inclusion required that a source bear directly on
+the dated event; user-forum material was admitted only for vendor-staff answers or
+where no better source exists, and is always tiered [secondary]. Artifact
+inspections (e.g., \S\ref{sec:msoffice}'s theme dump) are documented with path,
+software version, observation date, and SHA-256. Conflicting sources are footnoted
+with both readings and a stated preference (vendor primary over encyclopedic---e.g.,
+the Trebuchet MS first-ship discrepancy in \S\ref{sec:win-latin}). Negative findings
+(``no change found'') are scoped to the sources actually searched and say so. The
+research window bounds all ``current'' statements. This protocol supports
+spot-checking every claim from its citation; it is not a systematic-review protocol,
+and \S\ref{sec:limitations} says so.
+
+\paragraph{What counts as a font ``appearing''.} Provenance reasoning must
+distinguish: (a)~a \emph{nominal reference}---a font name in document markup (a
+\code{.docx} run property, a PDF \code{/BaseFont} name) with no font data; (b)~an
+\emph{embedded font program}; (c)~\emph{rendered output}---glyph outlines actually
+drawn, possibly by a substituted face; (d)~a \emph{substituted display face} (the
+viewer's stand-in, \S\ref{sec:pdf}); and (e)~an \emph{OCR text layer's} styling,
+which reflects the OCR engine, not the source document
+(\S\ref{sec:ocr}). Anachronism logic applies strictly to (b)---an embedded font
+program cannot predate the font. For (a), a nominal reference is strong but
+rebuttable: font \emph{names} can be written by software that never possessed the
+font (template inheritance, format converters, substitution tables---e.g., 2007-era
+iPhone pages could \emph{request} Helvetica Neue years before the font shipped on the
+device, \S\ref{sec:ios-latin}), so a nominal anachronism obliges the examiner to
+rule out name-injection paths before concluding. Inferences from (c)--(e) concern the
+\emph{rendering/processing} toolchain, not the original author. The timelines below
+date public availability; each anchor's type is stated in \S\ref{sec:anchors}.
+
+\paragraph{Evidence tiers.} Citations below carry one of these statuses, assigned
+during research in July 2026:
+\begin{itemize}[leftmargin=1.3em,itemsep=1pt]
+  \item \textbf{[verified live]}---the URL was fetched during this research and its
+        content was confirmed to support the claim (an HTTP 200 serving an error or
+        unrelated page does not qualify).
+  \item \textbf{[archive]}---the original is dead or unreachable; an Internet Archive
+        snapshot is cited. Where the snapshot's \emph{existence} was confirmed via
+        the Wayback availability API but its body could not be re-read during this
+        research (archive.org rate-limiting), the citation says so explicitly.
+  \item \textbf{[secondary]}---a reputable non-primary source (encyclopedic or
+        press), used for corroboration or where no primary survives; presented as
+        such.
+  \item \textbf{UNCERTAIN}---the claim is plausible and commonly reported but could
+        not be verified against an adequate source during this research; it is
+        flagged, not asserted.
+\end{itemize}
+
+Primary sources are preferred throughout: vendor documentation (Microsoft
+Learn/Typography font-family pages, Apple Support ``Fonts included with\ldots''
+articles, Apple Newsroom press releases, Android Developers Blog,
+GNOME/KDE/Fedora/Debian/Ubuntu project records, Adobe HelpX and the PDF/ISO
+specification, vendor API references), institutional records (Computer History
+Museum), and first-person designer accounts (Folklore.org; Ken Lunde's CJK writings
+are treated as near-primary for CJKV matters).
+
+\paragraph{Script lanes, not retail regional editions.} For CJK coverage this paper
+models \emph{script/locale lanes}---Simplified Chinese (SC), Traditional Chinese
+(TC), Traditional Chinese--Hong Kong (TC-HK), Japanese (JP), Korean (KR)---rather
+than retail regional editions (a ``Taiwan edition'' vs a ``mainland edition''). Three
+facts justify this choice. First, since the Unicode consolidation era (Windows 2000,
+Mac OS X, and all mobile OSes from birth), every edition of each OS carries the
+\emph{same worldwide font set}; what varies by locale is the per-locale default UI
+font binding and, in office software, the per-language document
+defaults.\cite{m-w2k,m-w2k-2} Second, regional editions matter as distinct artifacts
+only in the pre-Unicode era (Chinese/Japanese/Korean Windows 3.x/9x; KanjiTalk-era
+classic Mac OS), and those appear here as dated events \emph{within} the script
+lanes. Third, Singapore has no distinct font lane---zh-SG follows Simplified Chinese
+conventions---while Hong Kong earns a sub-lane solely because of the HKSCS
+character-set supplements and, later, dedicated HK typefaces (PingFang HK,
+\S\ref{sec:apple-cjk}).\cite{m-hkscs}
+
+A note on Windows 2000 specifically, because it anchors the ``editions stop
+mattering'' argument: on Windows 2000 and XP the East Asian fonts shipped on the
+installation media of every edition but were \textbf{not installed by default}
+outside CJK locales (Regional Options $\rightarrow$ ``Install files for East Asian
+languages''); CJK fonts became installed-by-default regardless of locale only in the
+Windows Vista/7 era.\cite{m-w2k-install}
+
+% === §3 Operating systems ====================================================
+\section{Operating Systems}\label{sec:os}
+
+\subsection{Microsoft Windows --- Latin lane}\label{sec:win-latin}
+
+Figure~\ref{fig:win-latin} traces the Windows default UI font and bundled-font
+milestones.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1985}{Windows 1.0 (Nov 20)---bitmap System font (titles and menus) with Helv bitmap for dialogs}
+\fpevent{1992}{Windows 3.1 (Apr 6)---TrueType arrives with Arial, Times New Roman, Courier New; Helv renamed MS Sans Serif}
+\fpevent{1995}{Windows 95 (Aug 24)---MS Sans Serif as default UI face; Comic Sans MS via Plus! pack}
+\fpevent{1998}{Windows 98 (Jun 25)---Verdana, Tahoma, Trebuchet MS present per Microsoft font tables}
+\fpevent{2000}{Windows 2000 (Feb 17)---Tahoma replaces MS Sans Serif as default UI font; Georgia bundled}
+\fpevent{2001}{Windows XP (Oct 25)---Tahoma retained}
+\fpevent{2007}{Windows Vista (Jan 30)---Segoe UI 9\,pt becomes default; ClearType six (Calibri, Cambria, Candara, Consolas, Constantia, Corbel) ship}
+\fpevent{2012}{Windows 8 (Oct 26)---Segoe UI stylistic refresh, Semilight weight}
+\fpevent{2015}{Windows 10 (Jul 29)---Segoe UI retained; many script fonts move to optional Feature-on-Demand packs}
+\fpevent{2021}{Windows 11 (Oct 5)---Segoe UI Variable becomes default; Cascadia Code and Cascadia Mono bundled}
+\fpevent{2023}{Aptos (Jul 13)---replaces Calibri as Microsoft 365 default; distributed via Office cloud fonts, never bundled in Windows}
+\end{fptimeline}
+\caption{Windows default UI font and bundled-font milestones (Latin lane).}
+\label{fig:win-latin}
+\end{figure*}
+
+\paragraph{Event register.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{1985-11-20 --- Windows 1.0.} UI set in bitmap fonts: a proportional
+``System'' font for titles/menus and ``Helv'' for dialogs; no scalable
+outlines.\cite{w-mssans}
+\item \textbf{1992-04-06 --- Windows 3.1.} TrueType introduced, with the founding
+scalable core set \textbf{Arial, Times New Roman, Courier New} (plus Symbol)---the
+first Windows with scalable outline fonts. The ``Helv'' bitmap is renamed \textbf{MS
+Sans Serif}. Launch date per the Computer History
+Museum.\cite{w-31date,w-ttf,w-ttf-2,w-mssans}
+\item \textbf{1995-08-24 --- Windows 95.} \textbf{MS Sans Serif} continues as the
+default UI font (through NT 4.0, 98, ME). \textbf{Comic Sans MS} first ships with the
+Windows 95 Plus! pack and OEM releases, per Microsoft's own font
+page.\cite{w-95date,w-mssans,w-comic}
+\item \textbf{1998-06-25 --- Windows 98.} Microsoft's per-font supply tables list
+\textbf{Verdana} (v2.10), \textbf{Tahoma} (v2.25), and \textbf{Trebuchet MS} (v0.98)
+from Windows 98. Verdana and Georgia (both Matthew Carter, 1996) reached users
+earlier via Internet Explorer and the 1996 ``Core fonts for the Web'' program;
+Wikipedia's typeface list attributes Verdana/Tahoma to Windows 95 via that route,
+while Microsoft's own tables enumerate only from 98---and for Trebuchet MS
+Microsoft's page (Windows 98) contradicts Wikipedia's ``2000''. Microsoft's pages are
+preferred here; the discrepancies are noted rather than
+resolved.\cite{w-98date,w-verdana,w-tahoma,w-trebuchet,w-corefonts,w-typelist}
+\item \textbf{2000-02-17 --- Windows 2000.} \textbf{Tahoma replaces MS Sans Serif} as
+the default screen/UI font (through XP and Server 2003). \textbf{Georgia} appears
+from Windows 2000 in Microsoft's table.\cite{w-2000date,w-tahoma-default,w-georgia}
+\item \textbf{2001-10-25 --- Windows XP.} Tahoma retained as default UI
+font.\cite{w-xpdate,w-tahoma-default}
+\item \textbf{2007-01-30 --- Windows Vista (consumer GA; business availability
+2006-11-30).} \textbf{Segoe UI at 9\,pt becomes the default UI font}, per Microsoft's
+Win32 UX guidance. The \textbf{ClearType Font Collection}---Calibri, Cambria, Candara,
+Consolas, Constantia, Corbel (plus Cambria Math and Meiryo)---ships to the general
+public; it had first appeared publicly in Office 2007 Beta 2 on 2006-05-23. In Office
+2007, released the same day, \textbf{Calibri replaced Times New Roman as the Word
+default} and Arial as the Excel/PowerPoint/Outlook default (\S\ref{sec:msoffice}).
+Provenance anchor: a document purportedly authored before mid-2006 set in Calibri is
+anachronistic.\cite{w-vistadate,w-segoe-default,w-cleartype,w-calibri}
+\item \textbf{2009-10-22 --- Windows 7.} Segoe UI 9\,pt retained (Light/Semibold/Symbol
+weights added).\cite{w-7date,w-segoe-default}
+\item \textbf{2012-10-26 --- Windows 8.} Segoe UI ships a stylistic redraw (dated
+October 2011), with a Semilight weight; Black and Emoji additions follow in 8.1
+(2013-10-17).\cite{w-8date,w-segoe}
+\item \textbf{2015-07-29 --- Windows 10.} Segoe UI retained. Structurally important
+for provenance: \textbf{many script-specific fonts move into optional
+Feature-on-Demand (FOD) packages}, installed automatically only when the associated
+language is enabled---presence of a font on a Windows 10/11 system no longer implies
+the OS installed it unconditionally.\cite{w-10date,w-fod}
+\item \textbf{2021-10-05 --- Windows 11.} \textbf{Segoe UI Variable} (weight axis plus
+an optical-size axis) becomes the default UI face; the Windows 11 font list marks
+Segoe UI Variable, Segoe Fluent Icons, Cascadia Code, and Cascadia Mono ``Added in
+Windows 11''.\cite{w-11list,w-11design}
+\item \textbf{2023-07-13 --- Aptos announced as the Microsoft 365 default} (Steve
+Matteson's ``Bierstadt'' renamed), replacing Calibri across Word, Excel, PowerPoint,
+Outlook. Distribution boundary, precisely: Aptos reaches users (a) inside Microsoft
+365 apps via the Office Font Service (``cloud fonts'') and (b) as a free manual
+download from the Microsoft Download Center (v4.40 published 2024-06-04) for use
+outside Office; it is \textbf{not} bundled as a Windows operating-system font and is
+absent from Microsoft's Windows 11 font
+list.\cite{w-aptos,w-aptos-2,w-aptos-dl,w-aptos-dl-2,w-11list}
+\end{itemize}
+
+Microsoft publishes authoritative per-version ``Fonts that ship with Windows'' lists
+for Windows 7 through 11; no such pages exist for Vista or XP (retired URLs return
+404), for which Wikipedia's typeface list with its ``Included from'' column is the
+best available consolidated record.\cite{w-lists,w-typelist}
+
+\subsection{Microsoft Windows --- CJK script lanes}\label{sec:win-cjk}
+
+Figure~\ref{fig:win-cjk} traces the Windows CJK default UI fonts by script lane.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1993}{Windows 3.1J---MS Gothic and MS Mincho by Ricoh licensed as the Japanese system fonts}
+\fpevent{1998}{TC Windows 98---PMingLiU (New MingLiU) joins DynaLab MingLiU}
+\fpevent{2000}{Windows 2000 (Feb 17)---one worldwide binary, full CJK set on all media (installable, not default-installed)---SimSun (SC), PMingLiU (TC), MS UI Gothic (JP), Gulim (KR) as locale UI fonts}
+\fpevent{2007}{Windows Vista (Jan 30)---the four-lane ClearType switch---Microsoft YaHei (SC), Microsoft JhengHei (TC), Meiryo (JP), Malgun Gothic (KR); HKSCS-2004 native; ExtB fonts added}
+\fpevent{2013}{Windows 8.1 (Oct 17)---Yu Gothic and Yu Mincho bundled (Jiyukobo); Meiryo UI still the JP UI font}
+\fpevent{2015}{Windows 10 (Jul 29)---JP UI font becomes Yu Gothic UI; legacy CJK families move to Feature-on-Demand; DengXian ships as SC FOD font}
+\fpevent{2021}{Windows 11 (Oct 5)---YaHei UI, JhengHei UI, Yu Gothic UI, Malgun Gothic all retained; Segoe UI Variable adds no CJK coverage}
+\end{fptimeline}
+\caption{Windows CJK default UI fonts by script lane.}
+\label{fig:win-cjk}
+\end{figure*}
+
+\paragraph{Simplified Chinese (SC).} The ZhongYi (Beijing ZhongYi Electronics) faces
+\textbf{SimSun 宋体} and \textbf{SimHei 黑体} anchor the lane from the regional Windows
+3.x/95 editions (pre-2000 per-edition ship dates rest on secondary sources;
+Microsoft's supply tables begin at Windows 2000, where SimSun/NSimSun v2.11 first
+appear). SimSun was the \textbf{default SC UI font on Windows 2000/XP}. On
+\textbf{Vista (2007-01-30)}, \textbf{Microsoft YaHei 微软雅黑}---glyphs licensed from
+Beijing Founder Electronics, ClearType-optimized---became the default SC UI font;
+SimSun remained bundled and \textbf{SimSun-ExtB} (CJK Extension B) was added.
+\textbf{DengXian 等线} ships from Windows 10 as an optional Feature-on-Demand font (it
+is also Office's Chinese default from Office 2016, \S\ref{sec:msoffice}). Windows 11
+retains YaHei UI as the SC UI binding, since Segoe UI Variable covers only
+Latin/Greek/Cyrillic.\cite{cw-simsun,cw-simsun-2,cw-yahei,cw-w10list,cw-w11,cw-w11-2}
+
+\paragraph{Traditional Chinese (TC).} The DynaLab (later DynaComware, 華康) Ming
+face---raster in TC Windows 3.0, TrueType from 3.1, renamed \textbf{MingLiU 細明體} at
+v2.00 (``U'' for Unicode)---was the TC UI face from Windows 3.0 through XP, joined by
+\textbf{DFKai-SB 標楷體} (kai) and, from TC Windows 98, the proportional \textbf{PMingLiU
+新細明體} (default TC UI font on 2000/XP). On \textbf{Vista}, \textbf{Microsoft JhengHei
+微軟正黑體} became the default TC UI font. Its designer is \textbf{China Type Design
+Limited} of Hong Kong (a Monotype company)---not DynaComware, a frequent
+misattribution. MingLiU-ExtB/PMingLiU-ExtB arrived with Vista; the whole legacy
+Ming/Kai set moved to Feature-on-Demand in Windows 10. JhengHei UI remains the TC
+binding in Windows 11.\cite{cw-mingliu,cw-mingliu-2,cw-mingliu-3,cw-kaplan,cw-jhenghei,cw-w10list}
+
+\paragraph{Traditional Chinese --- Hong Kong (HKSCS).} Hong Kong's supplementary
+character sets (GCCS 1995; HKSCS-1999/-2001/-2004/-2008/-2016) reached Windows first
+as \textbf{patches} for Windows 98/NT4/2000/XP that enabled a hidden code page 951 and
+patched MingLiU. \textbf{Vista} brought native, Unicode-based \textbf{HKSCS-2004}
+support with dedicated \textbf{MingLiU\_HKSCS} and \textbf{MingLiU\_HKSCS-ExtB} fonts,
+which remain the bundled HK glyph carriers (v7.03, in the TC Feature-on-Demand set)
+through Windows 10/11.\cite{cw-hkscs,cw-hkscs-2}
+
+\paragraph{Japanese (JP).} \textbf{MS Gothic} was ``designed by Ricoh Co. Ltd. and
+licensed as the default system font for Windows 3.1'' (1993), with serif companion
+\textbf{MS Mincho}; \textbf{MS UI Gothic} (from v2.30, Windows 2000) carried the JP UI
+through XP. On \textbf{Vista}, \textbf{Meiryo \ja{メイリオ}}---designed by C\&G Inc.
+(Satoru Akamoto, Takeharu Suzuki, Yukiko Ueda) with \textbf{Eiichi K\=ono} and
+\textbf{Matthew Carter}, JIS X 0213:2004-compliant, part of the ClearType
+collection---became the default JP system font; \textbf{Meiryo UI} followed in Windows
+7. \textbf{Windows 8.1 (2013-10-17)} bundled Jiyukobo's \textbf{Yu Gothic
+\ja{游ゴシック}} and \textbf{Yu Mincho \ja{游明朝}} while keeping Meiryo UI as the UI
+face; the switch of the JP UI font to \textbf{Yu Gothic UI} came with \textbf{Windows
+10 (2015-07-29)}, at which point Meiryo and MS Gothic/Mincho moved to the JP
+supplemental FOD set. \textbf{UD Digi Kyokasho} (universal-design textbook faces)
+arrived in Windows 10 version
+1709.\cite{cw-msgothic,cw-meiryo,cw-meiryo-2,cw-yugothic,cw-fontsupport}
+
+\paragraph{Korean (KR).} HanYang I\&C's \textbf{Gulim \ko{굴림}/GulimChe} (gothic) and
+\textbf{Batang \ko{바탕}/BatangChe} (myeongjo) anchor the lane from 1990s Korean
+Windows (Microsoft-documented from Windows 2000, v2.20); \textbf{Gulim} was the KR UI
+font on 2000/XP. On \textbf{Vista}, \textbf{Malgun Gothic \ko{맑은 고딕}}---Sandoll
+Communications (designers Kyoung-bae Lee and Daekwon Kim), Latin glyphs derived from
+Segoe UI---became the default KR UI font and has remained so through Windows 11 (hanja
+added in Windows 8 via China Type Design; Semilight weight later); Gulim/Batang/Dotum
+moved to the KR FOD set in Windows 10.\cite{cw-gulim,cw-gulim-2,cw-malgun,cw-malgun-2}
+
+\subsection{Apple macOS --- Latin lane}\label{sec:mac-latin}
+
+Figure~\ref{fig:mac-latin} traces the classic Mac OS and macOS default system font.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1984}{System 1 (Jan 24)---Chicago by Susan Kare, with the bitmap city fonts (Geneva, Monaco, New York and others)}
+\fpevent{1991}{System 7 (May 13)---TrueType introduced}
+\fpevent{1997}{Mac OS 8 (Jul 26)---Charcoal (Font Bureau, 1995) replaces Chicago as default; system font user-selectable}
+\fpevent{2000}{Mac OS X Public Beta (Sep 13)---Lucida Grande debuts with Aqua}
+\fpevent{2001}{Mac OS X 10.0 (Mar 24)---Lucida Grande confirmed as the OS X UI font}
+\fpevent{2014}{OS X 10.10 Yosemite (Oct 16)---Helvetica Neue replaces Lucida Grande}
+\fpevent{2015}{OS X 10.11 El Capitan (Sep 30)---San Francisco replaces Helvetica Neue; Apple's first in-house system typeface in two decades}
+\end{fptimeline}
+\caption{Classic Mac OS and macOS default system font (Latin lane).}
+\label{fig:mac-latin}
+\end{figure*}
+
+\paragraph{Event register.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{1984-01-24 --- System 1 (Macintosh 128K).} Default system font
+\textbf{Chicago} (Susan Kare; 12\,pt bitmap), used for menus, dialogs and titles, and
+retained as the system font through System 7.6. The original bundle is the bitmap
+``city'' set---Chicago, Geneva, Monaco, New York, Venice, London, Athens, San
+Francisco (the 1984 ransom-note face, unrelated to the 2015 system font), Toronto,
+Cairo---largely Kare's work; her first-person account of the city-naming convention
+survives on Folklore.org. The launch date is the 1984-01-24 shareholders'-meeting
+unveiling, anchored institutionally by the Computer History
+Museum.\cite{m-chicago,m-chicago-2,m-kare,m-kare-2,m-chm84,m-chm84-2}
+\item \textbf{1991-05-13 --- System 7.} \textbf{TrueType} introduced---Apple's outline
+font format, later licensed to Microsoft---freeing the Mac from fixed-size bitmaps (a
+TrueType Chicago was cut to match the bitmap metrics). Date corroborated by
+AppleInsider's dated retrospective; contemporaneous 1991 primary not
+captured.\cite{m-truetype,m-sys7,m-sys7-2}
+\item \textbf{1997-07-26 --- Mac OS 8.} Default system font changes to
+\textbf{Charcoal} (designed 1995 at Font Bureau, based on Chicago), introduced with
+the Platinum appearance; the Appearance control panel made the system font
+user-selectable, with Chicago still available. The 1997-07-26 ship date rests on
+secondary sources; Apple's 1997 press release survives only in Wayback snapshots that
+could not be re-read during this research (archive.org rate limiting)---flagged
+accordingly.\cite{m-charcoal,m-charcoal-2,m-os8,m-os8-2}
+\item \textbf{2000-09-13 / 2001-03-24 --- Mac OS X Public Beta (``Kodiak''), then 10.0
+(``Cheetah'').} \textbf{Lucida Grande} (Bigelow \& Holmes' Lucida family) becomes the
+UI font of the Aqua interface, first in the Public Beta and then in 10.0, and remains
+so until 2014. Apple's 2001-03-21 press release ``Mac OS X Hits Stores This Weekend''
+fixes the 10.0 retail date (``beginning this Saturday, March 24'') and---a
+bundled-font primary in its own right---advertises ``more than \$1{,}000 of the best
+fonts'', naming Baskerville, Zapfino, Futura and Optima, plus ``the highest-quality
+Japanese fonts'' (\S\ref{sec:apple-cjk}).\cite{m-lucida,m-pubbeta,m-osxpr}
+\item \textbf{2014-10-16 --- OS X 10.10 Yosemite.} Default system typeface changes from
+Lucida Grande to \textbf{Helvetica Neue}, aligning the Mac with iOS; the GA date is
+fixed by Apple's press release. The font-switch attribution itself rests on the
+encyclopedic record and John Siracusa's Ars Technica review (the review's typography
+section could not be re-fetched during this research; Ars blocks automated
+readers).\cite{m-yosemite-pr,m-yosemite-font,m-yosemite-font-2}
+\item \textbf{2015-09-30 --- OS X 10.11 El Capitan.} Default system font changes from
+Helvetica Neue to \textbf{San Francisco}, Apple's first in-house system typeface since
+the 1980s bitmap era, introduced across platforms (iOS 9: 2015-09-16,
+\S\ref{sec:apple-cjk}; watchOS earlier, 2015-04-24). Primary anchors: Apple's
+availability press release and the WWDC 2015 session ``Introducing the New System
+Fonts'' (Antonio Cavedoni).\cite{m-elcap-pr,m-wwdc804,m-sf}
+\end{itemize}
+
+\paragraph{San Francisco family evolution (bundled-font milestones).} SF Compact
+shipped first on Apple Watch (watchOS, April 2015); \textbf{SF Mono} appeared at WWDC
+2016 (Terminal/Xcode); the downloadable family was renamed from ``SF UI'' to
+\textbf{SF Pro} in the WWDC 2017 timeframe---supported by the SF Pro font files' own
+copyright string (``\copyright{} 2015--2017 Apple Inc.'') and the documented naming
+history; the before/after Wayback snapshots of Apple's developer fonts page
+(2016-06-18 vs 2017-06-12) exist per the availability API but their bodies could not
+be re-read during this research, so the 2017 rebrand year is stated with that caveat.
+\textbf{New York}, the serif companion (first seen as ``SF Serif'' in Apple Books, iOS
+12), was released on the Apple Developer site on \textbf{2019-06-03}. Variable-font
+builds of SF arrived at WWDC 2020, and the \textbf{SF script extensions} (SF Arabic at
+WWDC 2021, later SF Armenian, SF Georgian, SF Hebrew) extend the family beyond
+Latin.\cite{m-sf,m-sfpro,m-ny,m-devfonts}
+
+\paragraph{Bundled-font inventories and removals.} Apple publishes a per-release
+``Fonts included with macOS \textless name\textgreater'' support document (e.g.,
+article 120414 for macOS Sequoia), distinguishing pre-installed fonts,
+download-on-demand fonts (dimmed in Font Book), and document-support-only fonts---the
+authoritative per-version inventory. Since the Sierra era many legacy families
+(including the classic TC faces, \S\ref{sec:apple-cjk}, and Osaka) are
+download-on-demand rather than pre-installed.\cite{m-sequoia-fonts}
+
+\subsection{Apple --- CJK lanes (macOS and iOS)}\label{sec:apple-cjk}
+
+Figure~\ref{fig:apple-cjk} traces the Apple CJK system fonts by script lane.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1986}{KanjiTalk era---Osaka as the Japanese system face}
+\fpevent{Mid-1990s}{Chinese Language Kit (version dates approximate)---Apple LiSung and Apple LiGothic (DynaLab) for TC; Song, Hei, Kai, Beijing for SC}
+\fpevent{2000}{Apple announces Hiragino licensing (Feb 16, Macworld Tokyo)---six OpenType faces, 17,000 characters each}
+\fpevent{2001}{Mac OS X 10.0 (Mar 24)---Hiragino ships; Kaku Gothic Pro is the JP UI face}
+\fpevent{2002}{Mac OS X 10.2 Jaguar---STHeiti (SinoType) becomes the SC UI font}
+\fpevent{2003}{Mac OS X 10.3 Panther---LiHei Pro and LiSong Pro (DynaComware, Big-5E with HKSCS) join; LiHei Pro is the TC UI face}
+\fpevent{2009}{Mac OS X 10.6 Snow Leopard (Aug 28)---Hiragino Sans GB added for SC}
+\fpevent{2011}{iOS 5---Apple SD Gothic Neo (Sandoll) replaces AppleGothic as the KR UI font on iOS}
+\fpevent{2012}{OS X 10.8 Mountain Lion---Apple SD Gothic Neo becomes the KR UI font on the Mac}
+\fpevent{2015}{iOS 9 (Sep 16) and OS X 10.11 (Sep 30)---PingFang SC, TC and HK become the Chinese UI fonts; Hiragino rebranded Hiragino Sans}
+\end{fptimeline}
+\caption{Apple CJK system fonts by script lane (classic Mac OS, macOS, iOS).}
+\label{fig:apple-cjk}
+\end{figure*}
+
+\paragraph{Japanese.} The KanjiTalk-era system face was \textbf{Osaka} (bitmap;
+TrueType by the System 7/KanjiTalk 7 era---classic-era dates approximate). The modern
+era begins with Apple's \textbf{2000-02-16 Macworld Tokyo announcement}---still live on
+Apple Newsroom---of an agreement with Dainippon Screen (fonts designed by
+\textbf{Jiyukobo}) to bundle \textbf{Hiragino}: ``six typefaces, 17,000 characters
+each, in OpenType'', the JIS X 0213 expanded set. Hiragino shipped with Mac OS X 10.0
+(2001-03-24), and the Hiragino gothic faces have been the Japanese UI lineage on Mac
+OS X since---initially as \textbf{Hiragino Kaku Gothic Pro}, represented since the El
+Capitan era by the reorganized \textbf{Hiragino Sans} family (weights W0--W9). Osaka
+persists as a download-on-demand legacy
+font.\cite{ca-hiragino-pr,ca-hiragino,ca-sierra}
+
+\paragraph{Simplified Chinese.} Mac OS X bundled Changzhou SinoType's ST faces;
+\textbf{STHeiti became the SC UI font in 10.2 Jaguar} (2002)---not 10.0, a common
+conflation---with the full outline family (STXihei, STSong, STKai, STFangsong) present
+by 10.3. \textbf{Hiragino Sans GB} (an SC adaptation with Beijing Hanyi) was added in
+10.6 Snow Leopard (2009-08-28). The ST families were regrouped as Heiti SC / Songti SC
+/ Kaiti SC collections in the 10.7/10.8 era.\cite{ca-chinesemac,ca-cjklist}
+
+\paragraph{Traditional Chinese and Hong Kong.} The Chinese Language Kit era
+($\sim$1995) brought DynaLab's \textbf{Apple LiSung 儷宋} and \textbf{Apple LiGothic
+儷中黑} plus BiauKai 標楷. 10.3 Panther added \textbf{LiHei Pro 儷黑 Pro} and
+\textbf{LiSong Pro 儷宋 Pro}---Big-5E character set \textbf{including HKSCS}, making them
+the HK carriers---with LiHei Pro as the TC UI face through 2015. The legacy TC faces
+were demoted to download-on-demand around the Sierra era (not removed in Catalina, a
+common misreport).\cite{ca-chinesemac,ca-sierra}
+
+\paragraph{The 2015 PingFang event.} With iOS 9 (2015-09-16) and OS X 10.11 El Capitan
+(2015-09-30), \textbf{PingFang 蘋方} became the Chinese UI family---produced with
+DynaComware, six weights, in three regional variants: \textbf{PingFang SC, PingFang
+TC, and PingFang HK}. This is Apple's first dedicated Hong Kong UI lane (previously HK
+support rode inside Taiwan-TC fonts via HKSCS), and the event replaced STHeiti/Heiti
+SC/TC and LiHei Pro simultaneously.\cite{ca-pingfang,ca-pingfang-2,ca-chinesemac11}
+
+\paragraph{Korean.} \textbf{AppleGothic} carried the KR UI from the Korean Language Kit
+era through 2011--2012, when Sandoll's \textbf{Apple SD Gothic Neo} replaced it---first
+on \textbf{iOS 5 (2011)}, then on \textbf{OS X 10.8 Mountain Lion (2012)} with nine
+weights; it remains bundled (macOS Sequoia ships v19.x). The iOS 5.0-vs-5.1 point and
+the Mountain Lion attribution rest on foundry/community records rather than an Apple
+statement---flagged accordingly.\cite{ca-korean,ca-korean-2}
+
+\paragraph{iOS bundled-font history (Latin note in passing).} The original iPhone
+(2007) shipped a curated subset of Mac faces---Gruber's contemporaneous PDF specimen,
+still live, classifies 9 full families installed (Arial, Courier New, Georgia,
+Helvetica, Marker Felt, Times New Roman, Trebuchet MS, Verdana, Zapfino), 2 partial, 3
+name-substituted (\textbf{Helvetica Neue substituted by Helvetica}---Neue was not
+actually installed until the iPhone 4 era), and 27 Mac families absent
+(\S\ref{sec:ios-latin}).\cite{ca-gruber,ca-gruber-2}
+
+\subsection{Apple iOS --- Latin lane}\label{sec:ios-latin}
+
+Figure~\ref{fig:ios-latin} traces the iOS default system font.
+
+\begin{figure}[t]
+\centering
+\begin{fptimeline}[0.72\columnwidth]
+\fpevent{2007}{iPhone OS 1.0 (Jun 29)---Helvetica as system font; Helvetica Neue not installed, only name-substituted}
+\fpevent{2010}{iPhone 4 with iOS 4 (Jun 21 software, Jun 24 device)---Helvetica Neue on Retina hardware; non-Retina devices keep Helvetica}
+\fpevent{2013}{iOS 7 (Sep 18)---flat redesign leans on Helvetica Neue Light and Ultralight; beta 3 walks small text back to Regular}
+\fpevent{2015}{iOS 9 (Sep 16)---San Francisco replaces Helvetica Neue}
+\end{fptimeline}
+\caption{iOS default system font.}
+\label{fig:ios-latin}
+\end{figure}
+
+\paragraph{Event register.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{2007-06-29 --- iPhone OS 1.0.} System font \textbf{Helvetica}; Notes uses
+Marker Felt. Helvetica Neue was \emph{not installed}---pages requesting it silently got
+Helvetica (Gruber's specimen, \S\ref{sec:apple-cjk}). The full inventory: 9 full
+families, 2 partial, 3 substituted names, 27 absent.\cite{ca-gruber,ca-gruber-2,i-gruber07}
+\item \textbf{2010-06-21 / 2010-06-24 --- iOS 4 and iPhone 4.} \textbf{Helvetica Neue
+becomes the system font on Retina hardware.} This change is device-driven, not an
+OS-version change: the same iOS 4 on non-Retina devices (3GS and earlier) kept
+Helvetica---Gruber's contemporaneous review is explicit, attributing the split to
+hinting quality on low-density screens. Apple's iPhone 4 press release carries both
+dates (iOS 4 free update June 21; iPhone 4 on sale June 24) and the Retina
+display.\cite{i-gruber4,i-iphone4pr}
+\item \textbf{2013-09-18 --- iOS 7.} The flat redesign makes \textbf{Helvetica Neue}
+carry the interface system-wide, leaning on \textbf{Light/Ultralight} weights, with
+Dynamic Type introduced. In the beta cycle, betas 1--2 set most UI text in Helvetica
+Neue Light and were widely criticized; \textbf{beta 3 (2013-07-08) walked small text
+back to Regular}---a documented within-cycle default correction. GA date per Apple's
+press release.\cite{i-ios7pr,i-typographica,i-fortune}
+\item \textbf{2015-09-16 --- iOS 9.} \textbf{San Francisco} replaces Helvetica Neue as
+the system font, in lockstep with El Capitan (\S\ref{sec:mac-latin}); SF had debuted on
+Apple Watch on 2015-04-24 and been available to developers since 2014-11-18. GA date
+per Apple's press release.\cite{i-ios9pr,m-sf}
+\item \textbf{2019-09-19 --- iOS 13 (provenance-relevant API change).} Third-party
+\textbf{custom font installation} becomes supported system-wide---fonts distributed
+through App Store apps, registered via \code{CTFontManagerRegisterFontURLs}, managed in
+Settings (WWDC 2019 session 227). After this point, presence of a non-Apple font on an
+iOS device no longer implies jailbreak or configuration-profile
+sideloading.\cite{i-ios13,i-ios13-2,i-ios13-3}
+\end{itemize}
+
+\subsection{Android}\label{sec:android}
+
+Figure~\ref{fig:android} traces the Android default fonts (Latin and CJK).
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{2007}{Droid family announced (Nov 12)---Ascender Corporation, designer Steve Matteson, for the Open Handset Alliance}
+\fpevent{2008}{Android 1.0 (Sep 23)---Droid Sans default UI, Droid Serif and Droid Sans Mono bundled, Droid Sans Fallback for CJK}
+\fpevent{2011}{Android 4.0 Ice Cream Sandwich (Oct 19 SDK)---Roboto replaces Droid Sans; MotoyaLMaru and MotoyaLCedar bundled for Japanese}
+\fpevent{2014}{Roboto v2 published (Jul 16) with Material Design; Noto Sans CJK released (Jul 15); both ship in Android 5.0 Lollipop (Nov 12)}
+\fpevent{2015}{Android 6.0 Marshmallow---legacy Droid Sans Fallback and Motoya files removed, Noto covers all CJK}
+\fpevent{2017}{Android 8.0 Oreo (Aug 21)---Downloadable Fonts API and fonts-in-XML; Google Sans appears on Pixel skin (8.1)}
+\fpevent{2022}{Roboto Flex variable font released to Google Fonts (May 5)---not adopted as the AOSP system default}
+\end{fptimeline}
+\caption{Android default fonts (Latin and CJK).}
+\label{fig:android}
+\end{figure*}
+
+\paragraph{Event register (Latin lane).}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{2007-11-12 --- Droid family announced.} Ascender Corporation announces
+the Droid collection (Droid Sans, Droid Serif, Droid Sans Mono), designed by
+\textbf{Steve Matteson}, commissioned for the Open Handset Alliance's Android platform.
+The original PRWeb release is dead; a Wayback snapshot exists (existence confirmed via
+the availability API; body not re-read during this research due to archive.org rate
+limiting), with content corroborated by the encyclopedic record.\cite{a-droid-pr,a-droid}
+\item \textbf{2008-09-23 --- Android 1.0.} \textbf{Droid Sans} is the default UI font;
+\textbf{Droid Sans Fallback}---Apache-licensed, $\sim$15,500 Han glyphs built by
+component reference, following mainland-PRC preferred glyph shapes---is the single CJK
+fallback (the root of later ``wrong-region glyph'' complaints in TC/JP contexts).
+Primary date anchor: the Android Developers Blog post announcing the Android 1.0 SDK,
+release 1.\cite{a-10sdk,a-droid,a-fallback}
+\item \textbf{2011-10-19 --- Android 4.0 Ice Cream Sandwich (SDK; first device Galaxy
+Nexus, Nov 2011).} \textbf{Roboto} (Christian Robertson) replaces Droid Sans as the
+system font with the Holo design language. Note on sourcing: the Android 4.0 platform
+announcement post itself does not mention Roboto---the release/date primary is the
+platform post, while the Roboto attribution rests on the ICS-era Android Design
+typography page (Wayback snapshot; body not re-read this research) and contemporaneous
+press. Japanese: \textbf{MotoyaLMaru/MotoyaLCedar} (Motoya Co.) bundled, MotoyaLMaru
+serving as the JP fallback ahead of Droid Sans Fallback (these later became Google
+Fonts' Kosugi/Kosugi Maru).\cite{a-ics-sdk,a-ics-typo,a-wired,a-motoya,a-motoya-2}
+\item \textbf{2014-07-16 --- Roboto v2 published.} Christian Robertson's redesigned
+Roboto (``The New Roboto'', Google Developers Blog) accompanies Material Design
+(announced at Google I/O 2014-06-25): rounder forms, new weights. It ships as the
+system default with \textbf{Android 5.0 Lollipop (2014-11-12)}---publication and OS
+shipment are distinct dated events.\cite{a-roboto2,a-roboto2-2,a-lollipop}
+\item \textbf{2017-08-21 --- Android 8.0 Oreo.} \textbf{Downloadable Fonts API} and
+fonts-as-XML-resources (API 26)---apps no longer need to bundle font files;
+provenance-relevant because app typography stops implying APK contents.\cite{a-oreo}
+\item \textbf{Pixel vs AOSP (standing distinction).} Google's proprietary \textbf{Product
+Sans/Google Sans} appears on Pixel devices from Android 8.1 (Dec 2017) in branding
+surfaces, with \textbf{Google Sans Text} spreading through Pixel system apps around
+Android 12 (2021)---but these are Pixel skin overlays; \textbf{the AOSP default remains
+Roboto throughout}, and \textbf{Roboto Flex} (the 12-axis variable font released to
+Google Fonts on 2022-05-05) has \emph{not} been adopted as the AOSP system default.
+Pixel-lane version attributions rest on secondary observation and are marked
+UNCERTAIN.\cite{a-gsans,a-flex,a-flex-2}
+\end{itemize}
+
+\paragraph{CJK lane.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{2014-07-15 --- Source Han Sans / Noto Sans CJK released.} The first
+open-source Pan-CJK family---a joint Adobe (Source Han Sans) and Google (Noto Sans CJK)
+release, identical fonts under two brands, with partner foundries SinoType (SC), Iwata
+(JP), and Sandoll (KR); seven weights with distinct SC/TC/JP/KR regional
+variants.\cite{a-shs,a-shs-2}
+\item \textbf{2014-11-12 --- Android 5.0 Lollipop.} \textbf{Noto Sans CJK becomes
+Android's CJK default}, replacing Droid Sans Fallback and delivering per-region glyph
+correctness for the first time (\code{fonts.xml} with \code{zh-Hans}/\code{zh-Hant}/
+\code{ja}/\code{ko} language tags; only the Regular weight integrated in
+practice).\cite{a-shs,a-shs-2,a-shs75}
+\item \textbf{2015 --- Android 6.0 Marshmallow.} Legacy \textbf{Droid Sans Fallback and
+Motoya files removed} once Noto coverage is complete---corroborated by a
+system-partition diff of Nexus builds 5.1.1 vs 6.0.0; from Android 7.0 region selection
+moved to \code{ttcIndex} entries within a single Noto CJK collection
+file.\cite{a-cjk-remove}
+\item \textbf{2017-04-03 --- Source Han Serif / Noto Serif CJK released} (the serif
+companion). Whether/when stock Android bundled a serif CJK by default is \textbf{not
+established}---no AOSP primary found; treat serif-CJK presence on a device as app- or
+vendor-supplied absent other evidence. Variable Noto CJK on stock Android is
+community-attested for \textbf{Android 15+} only.\cite{a-shserif,a-cjk-vf,a-cjk-vf-2}
+\end{itemize}
+
+\subsection{Desktop Linux}\label{sec:linux}
+
+Figure~\ref{fig:linux} traces desktop Linux default UI fonts.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1999}{Arphic donates four Chinese TrueType fonts under the Arphic Public License}
+\fpevent{2003}{Bitstream Vera released (Jan 22, GNOME Foundation agreement); Kochi incident deprecates the free Japanese defaults (Jun 27)}
+\fpevent{2004}{DejaVu forks Vera---becomes the de facto distro default for years}
+\fpevent{2007}{Liberation fonts (May 9, Red Hat and Ascender)---metric-compatible with Arial, Times New Roman, Courier New; WenQuanYi Zen Hei (Sep 15) for Chinese}
+\fpevent{2010}{Ubuntu 10.10 (Oct 10)---Ubuntu Font Family (Dalton Maag) becomes the Ubuntu default}
+\fpevent{2011}{GNOME 3.0 (Apr 6)---Cantarell (Dave Crossland) becomes the GNOME default}
+\fpevent{2014}{KDE Plasma 5.0 (Jul 15)---Breeze theme with Noto Sans as default}
+\fpevent{2016}{Noto unified release (Oct 6); Ubuntu 16.04 switches Chinese to Noto Sans CJK}
+\fpevent{2018}{Fedora 29 switches all CJK defaults to Noto; Ubuntu 18.04 switches Japanese to Noto}
+\fpevent{2023}{Debian bookworm era---fontconfig 2.14 switches generic Latin defaults from DejaVu to Noto}
+\fpevent{2025}{GNOME 48 (Mar 19)---Adwaita Sans (an Inter fork) replaces Cantarell; Adwaita Mono (Iosevka) replaces Source Code Pro}
+\end{fptimeline}
+\caption{Desktop Linux default UI fonts---foundational packages and desktop switches.}
+\label{fig:linux}
+\end{figure*}
+
+\paragraph{Foundational packages.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{1999 --- Arphic Public License release.} Taiwan's Arphic Technology (文鼎)
+donates four TrueType fonts---AR PL Mingti2L Big5, AR PL KaitiM Big5 (TC), AR PL
+SungtiL GB, AR PL KaitiM GB (SC)---under the copyleft \textbf{Arphic Public License}
+(not the GPL, a common miscitation). These are the foundational free Chinese fonts;
+firefly's bitmap-patched derivatives became the \textbf{AR PL UMing/UKai} collections
+that long served as Debian/Ubuntu Chinese defaults.\cite{l-arphic,l-arphic-2,l-uming}
+\item \textbf{2003-01-22 --- Bitstream Vera.} The GNOME Foundation announces the
+agreement with Bitstream to release the ten-font Vera family (Jim Lyles) under a
+permissive license---the de facto Linux desktop faces of the mid-2000s.\cite{l-vera}
+\item \textbf{2004 --- DejaVu.} \v{S}t\v{e}p\'an Roh forks Vera 1.10 to extend coverage;
+DejaVu becomes the default sans/serif/mono across Fedora, Debian, Ubuntu and openSUSE
+for roughly 2005--2011 and remains a fontconfig fallback staple (final release 2.37,
+2016).\cite{l-dejavu}
+\item \textbf{2007-05-09 --- Liberation fonts.} Red Hat (with Ascender; design Steve
+Matteson) releases Liberation Sans/Serif/Mono, \textbf{metrically identical to Arial,
+Times New Roman, and Courier New}---``when substituted for the Microsoft fonts, a line
+of text is identically displayed'' per Red Hat's announcement. Relicensed SIL OFL
+(v2.0, 2012, rebased on Croscore). Default document faces in Fedora and LibreOffice
+(\S\ref{sec:staroffice}).\cite{l-liberation,l-liberation-2}
+\item \textbf{2016-10-06 --- Noto unified release.} Google/Monotype's ``no more tofu''
+family publicly launches as a unified whole (components shipped earlier---Android used
+Noto CJK from 2014, \S\ref{sec:android}).\cite{l-noto}
+\end{itemize}
+
+\paragraph{Desktop/distro default switches.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{2010-10-10 --- Ubuntu 10.10.} The \textbf{Ubuntu Font Family} (Dalton
+Maag, funded by Canonical, Ubuntu Font Licence 1.0) becomes the default UI font,
+replacing DejaVu Sans; Launchpad confirms the 10.10 default installation and
+authorship.\cite{l-ubuntufont}
+\item \textbf{2011-04-06 --- GNOME 3.0.} \textbf{Cantarell} (Dave Crossland) becomes
+GNOME's default UI font---GNOME's own announcement: ``the GNOME desktop will use
+Cantarell by default.'' Fedora inherits it from Fedora 15 (May 2011) as the Workstation
+default.\cite{l-cantarell,l-cantarell-2}
+\item \textbf{2014-07-15 --- KDE Plasma 5.0.} The Breeze theme makes \textbf{Noto Sans}
+the Plasma default. Precision note: KDE's own 5.0 announcement (primary for the date
+and the Breeze theme) does not name the font; the Noto attribution rests on distro
+configuration records and community documentation, and is labeled
+accordingly.\cite{l-plasma5}
+\item \textbf{2022--2023 --- Debian's generic aliases move to Noto.} fontconfig 2.14
+changed the generic Latin defaults (sans/serif) from DejaVu to Noto in
+\code{60-latin.conf}, landing in the Debian bookworm era; after objections Debian
+reverted the \emph{monospace} alias to DejaVu Sans Mono (fontconfig 2.14.2-4). This is
+the fontconfig alias layer, distinct from any desktop's UI font.\cite{l-debian}
+\item \textbf{2025-03-19 --- GNOME 48.} \textbf{Adwaita Sans}---a customized build of
+Rasmus Andersson's \textbf{Inter}---replaces Cantarell as GNOME's UI font, and
+\textbf{Adwaita Mono} (an Iosevka build) replaces Source Code Pro: the first GNOME
+UI-font change since 3.0. Fedora 42 ships it via GNOME 48. GNOME's release notes
+describe the new fonts; the replaced-predecessor framing is corroborated by Phoronix
+and the GNOME development blog.\cite{l-gnome48,l-gnome48-2,l-gnome48-3}
+\item \textbf{RHEL note.} Red Hat Display/Text (2019, MCKL) are \textbf{brand fonts},
+not the RHEL desktop UI default---RHEL's GNOME desktop follows the GNOME lineage above.
+Asserting ``RHEL defaults to Red Hat Display'' would be incorrect.\cite{l-redhat,l-redhat-2}
+\end{itemize}
+
+\paragraph{CJK lanes on Linux.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{Japanese.} The free-font lineage runs Kochi (deprecated after the
+2003-06-27 glyph-copying disclosure against TypeBank's Mincho-M) $\rightarrow$ Sazanami
+(2004, interim) $\rightarrow$ \textbf{VL Gothic} (Fedora's JP default from Fedora 9,
+2008) and \textbf{IPA fonts} (open-sourced under the OSI-approved IPA Font License,
+2009-04-01) $\rightarrow$ \textbf{Takao} forks (Ubuntu JP default from 10.04, first
+release 2010-02-15) $\rightarrow$ \textbf{Noto Sans CJK JP} (Ubuntu 18.04; Fedora
+29).\cite{l-kochi,l-vlgothic,l-ipa,l-takao,l-noto-switch,l-noto-switch-2,l-noto-switch-3}
+\item \textbf{Chinese.} Arphic/UMing/UKai (above) $\rightarrow$ \textbf{WenQuanYi Zen
+Hei} (released 2007-09-15; project founded 2004 by Qianqian Fang), the first
+open-source Chinese heiti, default for Simplified Chinese in the Fedora/Ubuntu
+2007--2008 cycle (exact first-default releases UNCERTAIN) $\rightarrow$ \textbf{Noto
+Sans CJK} (Ubuntu 16.04 for Chinese---with a famous fontconfig ordering bug that let
+the JP variant win for zh users until reprioritized; Fedora 29
+system-wide).\cite{l-wqy,l-noto-switch,l-noto-switch-2,l-noto-switch-3}
+\item \textbf{Korean.} Baekmuk (1990s) $\rightarrow$ UnFonts (Ubuntu default $\sim$2007)
+$\rightarrow$ \textbf{Nanum} (Naver, released 2008; Ubuntu's Korean default from 12.04)
+$\rightarrow$ Noto CJK KR (Fedora 29).\cite{l-nanum,l-nanum-2,l-noto-switch,l-noto-switch-2,l-noto-switch-3}
+\item \textbf{The Fedora 29 consolidation (2018).} Fedora's Change
+``CJKDefaultFontsToNoto'' (owners Akira Tagoh, Peng Wu) formally switched \textbf{all}
+CJK defaults---VL Gothic (JP), NanumGothic (KR), and the Source Han variants
+(SC/TC)---to Noto CJK. Negative finding worth recording: the widely-repeated claim that
+Fedora 21 (2014) made Noto the CJK default has \textbf{no primary Fedora Change behind
+it}; the documented system-wide switch is
+F29.\cite{l-noto-switch,l-noto-switch-2,l-noto-switch-3}
+\end{itemize}
+
+% === §4 Office suites ========================================================
+\section{Office Suites}\label{sec:office}
+
+\subsection{Microsoft Office}\label{sec:msoffice}
+
+Figure~\ref{fig:msoffice} traces the Microsoft Office default document fonts across
+Latin and CJK edition lanes.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1989}{Word for Windows era---Times New Roman 10\,pt (Excel Arial 10)}
+\fpevent{1999}{Office 2000 (Jun 7)---Word default becomes Times New Roman 12\,pt}
+\fpevent{2007}{Office 2007 (Jan 30 retail)---Calibri 11\,pt replaces Times New Roman in Word and Arial in Excel, PowerPoint, Outlook}
+\fpevent{2013}{Office 2013---Calibri body with Calibri Light headings}
+\fpevent{2015}{Office 2016 (Sep 22)---Japanese Word body default becomes Yu Mincho (Excel and PowerPoint follow Yu Gothic theme fonts); Simplified Chinese edition switches to DengXian; Traditional Chinese stays PMingLiU}
+\fpevent{2021}{Beyond Calibri (Apr 28)---five candidate successors announced}
+\fpevent{2023}{Aptos announced as new default (Jul 13); M365 rollout through early 2024}
+\fpevent{2024}{Office LTSC 2024 and Office 2024 (Sep 16 and Oct 1)---first perpetual releases defaulting to Aptos}
+\end{fptimeline}
+\caption{Microsoft Office default document fonts (Latin and CJK edition lanes).}
+\label{fig:msoffice}
+\end{figure*}
+
+\paragraph{Latin lane.}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{Word for Windows through Word 97:} Normal-template default \textbf{Times
+New Roman 10\,pt}; Excel \textbf{Arial 10}. \textbf{Office 2000 (GA 1999-06-07)} raised
+Word's default to \textbf{Times New Roman 12\,pt}---at Word 2000, not 2002/2003 as
+commonly misremembered---persisting through Word 2003.\cite{o-barnhill,o-barnhill-2}
+\item \textbf{Office 2007 (volume-license 2006-11-30; retail GA 2007-01-30):}
+\textbf{Calibri 11\,pt} replaces Times New Roman as the Word default and Arial as the
+Excel/PowerPoint/Outlook default, with Cambria as the serif heading companion---the
+arrival of the ClearType Font Collection (\S\ref{sec:win-latin}). The change was
+championed by Word program management (Joe Friend) for screen readability. The
+``Fontgate'' affair (2017) turns on the \emph{earlier} of Calibri's two public
+boundaries: the disputed documents were represented as executed in February 2006,
+before even the Office 2007 Beta 2 public distribution of 2006-05-23---let alone the
+2007-01-30 general availability.\cite{w-calibri,o-friend,o-fontgate}
+\item \textbf{Office 2010--2021:} Calibri retained; Office 2013 introduced the
+Calibri-plus-Calibri-Light theme (``Office Theme 2013--2022'').\cite{o-theme}
+\item \textbf{2021-04-28 --- ``Beyond Calibri'':} Microsoft announces five commissioned
+candidates (Bierstadt, Tenorite, Skeena, Seaford, Grandview), all added to the
+Microsoft 365 font picker. \textbf{2023-07-13:} Bierstadt, renamed \textbf{Aptos}
+(Steve Matteson), is announced as the new default; staged rollout makes it the
+Microsoft 365 default through late 2023--early 2024, and \textbf{Office LTSC 2024 /
+Office 2024} (2024-09-16 / 2024-10-01) are the first perpetual releases defaulting to
+Aptos.\cite{o-beyond,w-aptos,w-aptos-2,o-2024}
+\item \textbf{Cloud fonts:} Microsoft 365's on-demand ``cloud fonts'' arrived in the
+2016--2017 window (exact launch date UNCERTAIN against Microsoft documentation)---
+provenance-relevant because subscriber documents may use fonts never locally
+installed.\cite{o-cloud}
+\item \textbf{Office for Mac:} Office 2008 for Mac reportedly defaulted to Cambria (a
+Mac-vs-Windows inconsistency), aligning to Calibri by Office 2016 for Mac---[secondary],
+with per-app details UNCERTAIN.\cite{o-mac}
+\end{itemize}
+
+\paragraph{CJK edition lanes.} Office binds per-script default fonts in its theme
+(\code{theme1.xml}, ISO 15924 script tags), so each language edition has its own
+default lineage:
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{Japanese:} \textbf{MS Mincho} (body) for decades $\rightarrow$
+\textbf{Office 2016 for Windows (2015-09-22): Yu Mincho} body with \textbf{Yu Gothic}
+headings (Excel: MS P Gothic $\rightarrow$ Yu Gothic). The Yu fonts ship in Windows
+from 8.1 (\S\ref{sec:win-cjk}). JustSystems' Ichitaro made the equivalent switch in
+2021 (\S\ref{sec:cjkoffice}).\cite{o-jp}
+\item \textbf{Simplified Chinese:} \textbf{SimSun 宋体} $\rightarrow$ \textbf{DengXian
+等线} as the Office 2016 SC-edition default. Precision matters here: the DengXian
+\emph{font} first shipped in \textbf{Windows 10 version 1507 (2015-07-29)} as part of
+the SC supplemental fonts; \textbf{Office 2016} adopted it as the SC default theme
+font.\cite{o-dengxian}
+\item \textbf{Traditional Chinese:} \textbf{PMingLiU 新細明體 --- no change.} The TC
+edition kept PMingLiU as its default through current Microsoft 365; Microsoft JhengHei
+(Vista-era ClearType sans, \S\ref{sec:win-cjk}) is available but is not the document
+default. A TC document defaulting to PMingLiU alongside an SC document defaulting to
+DengXian is thus itself a script-edition discriminator.\cite{o-tc}
+\item \textbf{Korean:} Windows' Korean \emph{UI} default moved Gulim $\rightarrow$
+Malgun Gothic at Vista (\S\ref{sec:win-cjk}), but \textbf{which Office release (if any)
+switched the Korean document body default from Batang-era faces to Malgun Gothic is
+UNCERTAIN}---no clean primary source found; not asserted.\cite{o-kr}
+\item \textbf{Aptos-era theme bindings (verified by artifact inspection):} Aptos covers
+Latin/Greek/Cyrillic (plus Vietnamese) only, so the Aptos theme resolves CJK text
+through per-script \code{<a:font>} bindings. Direct inspection of the bundled
+\code{Office Theme.thmx} $\rightarrow$ \code{theme1.xml} in an installed Microsoft Word
+for Mac (Microsoft 365, version 16.111.1, observed 2026-07-24) shows: \textbf{majorFont}
+(headings) latin = \emph{Aptos Display}, with Jpan = \ja{游ゴシック} Light (Yu Gothic
+Light), Hang = \ko{맑은 고딕} (Malgun Gothic), Hans = 等线 Light (DengXian Light), Hant =
+新細明體 (PMingLiU); \textbf{minorFont} (body) latin = \emph{Aptos}, with Jpan =
+\ja{游ゴシック}, Hang = \ko{맑은 고딕}, Hans = 等线, Hant = 新細明體. Note the Japanese
+nuance this exposes: the \emph{theme} body binding is \textbf{Yu Gothic}, while Word's
+Japanese-edition document body default is documented as \textbf{Yu Mincho}
+[secondary]---which implies a template-level override of the theme binding in ja-JP Word
+(the ja-JP Normal template itself was not inspected here), whereas Excel/PowerPoint
+follow the theme's Yu Gothic.\cite{o-aptos-cjk}
+\end{itemize}
+
+\subsection{StarOffice, OpenOffice.org, LibreOffice}\label{sec:staroffice}
+
+Figure~\ref{fig:staroffice} traces the StarOffice, OpenOffice.org and LibreOffice
+defaults.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1999}{StarOffice 5.x (Sun)---Agfa Monotype metric clones bundled---Albany (Arial), Thorndale (Times New Roman), Cumberland (Courier New)}
+\fpevent{2002}{OpenOffice.org 1.0 (May 1)---relies on system fonts; Writer default carried as Times New Roman by name}
+\fpevent{2008}{OOo 2.4 (Mar)---Liberation fonts bundled}
+\fpevent{2011}{LibreOffice 3.3 (Jan 25)---Writer default is Liberation Serif 12\,pt, Impress and Calc use Liberation Sans}
+\fpevent{2013}{LibreOffice 4.1 (Jul 25)---Carlito and Caladea bundled as Calibri and Cambria metric substitutes}
+\end{fptimeline}
+\caption{StarOffice, OpenOffice.org and LibreOffice defaults.}
+\label{fig:staroffice}
+\end{figure*}
+
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{StarOffice 5.x (Sun era, 1999--2000).} Bundled Agfa Monotype's
+metric-compatible clones---\textbf{Albany} ($\triangleq$ Arial), \textbf{Thorndale}
+($\triangleq$ Times New Roman), \textbf{Cumberland} ($\triangleq$ Courier New)---so
+documents exchanged with Microsoft Office kept identical line breaks. The ``AMT''
+suffix on enterprise systems is ``Agfa Monotype''. Precise first-bundling point release
+UNCERTAIN; StarOffice 5.2 released 2000-06-20.\cite{s-staroffice,s-staroffice-2}
+\item \textbf{OpenOffice.org.} 1.0 released 2002-05-01 (announcement 2002-04-30); the
+proprietary AMT clones could not be redistributed, so OOo leaned on system fonts, with
+the Writer default carried as ``Times New Roman'' \emph{by name} (substituted on
+Linux)---the exact default string is UNCERTAIN against primary documentation. Bundling
+history: Bitstream Vera (through 2.3) $\rightarrow$ \textbf{Liberation from 2.4}
+(2008-03) $\rightarrow$ Gentium added at 3.2 (2010-02).\cite{s-ooo,s-ooo-2}
+\item \textbf{LibreOffice.} Forked 2010-09-28; 3.3 released 2011-01-25. \textbf{Writer's
+default has been Liberation Serif 12\,pt from 3.3 to the present} (Impress/Calc:
+Liberation Sans)---no shipped change found across 3.x--25.x, itself a provenance
+finding. \textbf{LibreOffice 4.1 (2013-07-25) began bundling Carlito and Caladea}
+(Google's ``crosextra'' faces, metric-compatible with Calibri and Cambria), the
+substitution pair that makes post-2007 \code{.docx} files lay out correctly without
+Microsoft fonts---a Carlito rendering of Calibri-styled text indicates metric
+substitution on a host lacking Calibri (LibreOffice bundles Carlito; so do many Linux
+distributions), not uniquely a LibreOffice host. CJK: LibreOffice's per-locale default
+lists (\code{VCL.xcu}) prefer Source Han Sans/Noto Sans CJK first, falling back to
+platform faces (Microsoft YaHei/NSimSun on Windows, PingFang on macOS), so the effective
+CJK default is host-dependent.\cite{s-lo,s-lo-2,s-lo41,s-lo41-2,s-lo41-3,s-lo-cjk}
+\end{itemize}
+
+\subsection{WPS Office, Google Docs, Apple iWork}\label{sec:wps}
+
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{WPS Office (Kingsoft).} For Chinese documents WPS follows the SimSun
+convention---behavioral testing shows 宋体 (SimSun) as the effective Chinese default and
+missing-font fallback (STSong on macOS), matching Chinese-locale Word; its Latin default
+is UNCERTAIN against vendor documentation. WPS has integrated third-party free fonts
+(e.g., Xiaomi's MiSans) rather than shipping a proprietary clone set. It is widely
+deployed in China, including a dedicated government ``Official Document Edition'' (2022);
+market-share figures circulating for WPS (e.g., a $\sim$95\%-by-1993 claim) survive only
+in tertiary compilations and are not asserted here.\cite{s-wps,s-wps-2}
+\item \textbf{Google Docs.} Default body font \textbf{Arial 11} with 1.15 line spacing,
+as documented for recent Google Docs; no record of a default-face change was found in
+the sources searched, but the earliest-years (2006-era) default is unverified---the
+continuous-since-2006 reading is UNCERTAIN. Google Fonts (launched May 2010) later fed
+Docs' ``more fonts'' picker, expanding available---not default---fonts.\cite{s-gdocs,s-gdocs-2}
+\item \textbf{Apple iWork Pages.} Recent Pages versions default the Blank template body
+to \textbf{Helvetica Neue 11\,pt} per secondary documentation (Pages has no global
+default font---templates' paragraph styles carry it); this was not version-verified
+against a named Pages build during this research. Pre-2013 template defaults (Pages
+'05--'09) are UNCERTAIN against Apple primary documentation and are not asserted
+here.\cite{s-pages,s-pages-2}
+\item \textbf{Historical one-liners, explicitly unverified.} WordPerfect for Windows
+(commonly reported Times New Roman 12, earlier versions Courier) and Lotus Word Pro
+(commonly reported Times New Roman)---both UNCERTAIN; presented only as commonly
+reported.\cite{s-legacy}
+\end{itemize}
+
+\subsection{CJK-market office suites: Ichitaro and Hancom}\label{sec:cjkoffice}
+
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{JustSystems Ichitaro 一太郎 (Japan; first released 1985; the \#2 Japanese
+word processor after Word).} Default Japanese body font was \textbf{MS Mincho through
+Ichitaro 2020}; per JustSystems' support note \#058017 and contemporaneous trade-press
+reporting, \textbf{Ichitaro 2021 (released 2021-02-05) switched the default to Yu Mincho
+\ja{游明朝}}---mirroring Office 2016's JP switch (\S\ref{sec:msoffice}) five years later
+(the vendor note itself was not fetched during this research; attribution rests on the
+reporting). Premium editions bundle licensed professional fonts (Morisawa faces,
+Chikushi 筑紫 families, UD fonts).\cite{s-ichitaro,s-ichitaro-2,s-ichitaro-3}
+\item \textbf{Hancom Office / Hangul HWP (Korea; dominant in Korean government).} The
+historical Korean default serif category is \textbf{\ko{바탕} Batang} (the 1993 Ministry
+of Culture standardization renamed the category from \emph{myeongjo}); recent Hancom
+versions default to Hancom's own \textbf{\ko{함초롬바탕} HCR Batang} (Hamchorom family;
+only HCR Batang/Dotum are licensed for use outside Hancom Office). The exact HWP release
+that switched to Hamchorom is UNCERTAIN (Hangul 2010/2014 era).\cite{s-hancom,s-hancom-2}
+\end{itemize}
+
+% === §5 PDF and scan/OCR tools ===============================================
+\section{PDF and Scan/OCR Tools}\label{sec:pdf}
+
+\subsection{Adobe Acrobat and Reader}\label{sec:acrobat}
+
+Figure~\ref{fig:acrobat} traces the Adobe Acrobat font-substitution provenance markers.
+
+\begin{figure*}[t]
+\centering
+\begin{fptimeline}
+\fpevent{1993}{Acrobat 1.0 and PDF 1.0 (Jun 15)---Base-14 standard fonts guaranteed without embedding}
+\fpevent{1994}{Acrobat 2.0---Adobe Sans MM and Adobe Serif MM multiple-master substitution fonts introduced}
+\fpevent{2006}{Acrobat 8 era---Typewriter tool defaults to Courier; form fields Helvetica 12}
+\fpevent{2011}{Acrobat X and later---Edit PDF and TouchUp fall back to Minion Pro for missing Latin fonts}
+\end{fptimeline}
+\caption{Adobe Acrobat font-substitution provenance markers.}
+\label{fig:acrobat}
+\end{figure*}
+
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{1993-06-15 --- the Base-14.} PDF 1.0 (announced at Comdex Fall 1992;
+Acrobat 1.0 shipped June 1993) guarantees \textbf{14 standard Type 1 fonts} every
+conforming viewer supplies without embedding: Times, Helvetica, and Courier in four
+styles each, plus Symbol and ZapfDingbats (normative in the PDF Reference and ISO
+32000-1 \S9.6.2.2). Viewers map them to system faces (Helvetica$\rightarrow$Arial,
+Times$\rightarrow$Times New Roman, Courier$\rightarrow$Courier New on Windows).
+\emph{Provenance:} unembedded Base-14 face names mark programmatically-generated or
+default-styled PDFs relying on viewer
+substitution.\cite{p-base14,p-base14-2,p-base14-3,p-history,p-history-2}
+\item \textbf{1994 --- Acrobat 2.0: Adobe Sans MM / Adobe Serif MM.} Two multiple-master
+fonts distributed only inside Acrobat/Reader (not installable or licensable separately),
+used to synthesize metric-matched stand-ins for missing non-Base-14 Latin fonts.
+\emph{Provenance:} their appearance in rendered or re-saved output is strongly consistent
+with Acrobat processing a PDF whose fonts were absent---the strength of the inference
+comes from their Acrobat-only distribution, though other Adobe-derived workflows can in
+principle carry the names.\cite{p-mm,p-mm-2}
+\item \textbf{Tool defaults.} Typewriter tool: \textbf{Courier} (Acrobat 8 era), later
+Helvetica; form text fields: \textbf{Helvetica 12}; Fill \& Sign: fixed by design. Edit
+PDF/TouchUp fallback for unavailable Latin fonts: \textbf{Minion Pro} (Acrobat X/XI/DC;
+configurable via Content Editing preferences). \emph{Provenance:} Minion Pro body text
+inside an otherwise foreign document marks post-hoc Acrobat
+editing.\cite{p-tools,p-tools-2,p-minion,p-minion-2}
+\item \textbf{CJK substitution packs.} Acrobat's Asian font packs supply \textbf{Kozuka
+Mincho/Gothic} (JP), \textbf{Adobe Song Std} (SC), \textbf{Adobe Ming Std} (TC),
+\textbf{Adobe Myungjo Std} (KR) as substitution faces for unembedded CJK fonts (pack
+composition evolved across Acrobat 7$\rightarrow$DC; dates approximate). \emph{Provenance:}
+CJK text rendering in these Adobe Std/Kozuka faces fingerprints Acrobat substitution
+rather than original typesetting.\cite{p-cjk,p-cjk-2,p-cjk-3}
+\end{itemize}
+
+\subsection{Scan/OCR tools (PaperPort and peers)}\label{sec:ocr}
+
+Provenance principle: \textbf{an OCR'd document's text layer carries the OCR engine's
+output-font choices, not the original's typography.}
+
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+\item \textbf{ABBYY FineReader} (best documented): assigns recognized text to
+visually-closest fonts by default and supports forcing a single output font---commonly
+Arial or Times New Roman; ABBYY's Linux engine documentation expects Arial/Times New
+Roman present. A uniform Arial/Times text layer over a scan is consistent with
+ABBYY-class OCR output.\cite{p-abbyy,p-abbyy-2,p-abbyy-3}
+\item \textbf{PaperPort} (Visioneer 1992 $\rightarrow$ ScanSoft 1999 $\rightarrow$ Nuance
+2005 $\rightarrow$ Kofax 2018 $\rightarrow$ Tungsten Automation 2024): distributed at
+scale as SOHO scanner bundleware---licensed with Brother, Canon, Dell, HP, and Xerox
+devices per the bundling model described in Nuance's SEC filings (which evidence the
+\emph{distribution channel}; no installed-base or market-share figures were located, so
+``popularity'' is not quantified here). Historically carried the OmniPage OCR engine. Its
+OCR output-font behavior is \textbf{undocumented}---stated as such, not
+invented.\cite{p-paperport,p-paperport-2,p-paperport-3}
+\item \textbf{OmniPage} (Caere, late 1980s $\rightarrow$ ScanSoft 2000 $\rightarrow$
+Nuance $\rightarrow$ Tungsten) and \textbf{Readiris} (I.R.I.S., Belgium, 1987+, now a
+Canon company): same class; output-font defaults undocumented---UNCERTAIN.\cite{p-omnipage,p-omnipage-2}
+\item \textbf{Other PDF editors:} Foxit's add-text defaults to Helvetica; PDF-XChange's
+Typewriter historically Courier New 12; Nitro exposes no documented single default
+(UNCERTAIN).\cite{p-editors,p-editors-2,p-editors-3}
+\end{itemize}
+
+% === §6 Document-generation libraries ========================================
+\section{Document-Generation Libraries (Aspose and Peers)}\label{sec:libraries}
+
+Documents produced or converted by server-side libraries carry the library's default
+and substitution fonts---a distinctive toolchain fingerprint.
+
+\begin{table*}[t]
+\centering\small
+\caption{Default and missing-font behavior of the Aspose document-generation suites.}
+\label{tab:aspose}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.30\textwidth} >{\raggedright\arraybackslash}p{0.30\textwidth}@{}}
+\toprule
+Product & New-object default & Missing-font behavior & Provenance tell \\
+\midrule
+Aspose.Words & Times New Roman 12 (Normal style) & Substitution chain ends at \code{DefaultFontName} = ``Times New Roman''; then first available font; last resort: embedded \textbf{Fanwood.ttf} & Fanwood output, with Aspose's substitution warning or matching metadata, is strong evidence of Aspose.Words on a font-starved host (Fanwood alone is only consistent with it---the font is publicly available) \\
+\addlinespace
+Aspose.Cells & Calibri 11 (workbook default style) & Falls back to workbook \code{DefaultStyle.Font}; PDF/image save options can override & Calibri mirrors Excel 2007+ \\
+\addlinespace
+Aspose.Slides & none fixed (deck theme fonts) & Heuristic closest-available system font, PowerPoint-like; ships no fonts & No single fingerprint; Cambria Math irreplaceable for equations \\
+\addlinespace
+Aspose.PDF & Times New Roman (TextFragment default) & Exact-name match, then \code{FontRepository.Substitutions}; Base-14 never embedded & Times New Roman re-set on edited text \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Key documented facts: Aspose.Words' \code{DefaultFontSubstitutionRule.\allowbreak{}DefaultFontName}
+documents ``The default value is `Times New Roman'\,''; the substitution order (exact
+match $\rightarrow$ embedded $\rightarrow$ AltName $\rightarrow$ rules $\rightarrow$ first
+available $\rightarrow$ bundled Fanwood) is Aspose's own documentation, including the
+characteristic warning ``Font `Times New Roman' has not been found. Using `Fanwood' font
+instead.''; Aspose.Slides' documentation states Aspose distributes no fonts and picks the
+closest system font. None of the products ship CJK fonts---CJK output on bare containers
+produces tofu or host-dependent fallback (the ordering is \emph{not} Aspose-defined), and
+Aspose.PDF throws on standard CJK PostScript names (STSong-Light, MSung-Light,
+HYSMyeongJo-Medium) when absent. \textbf{Stability finding (scoped):} in the Aspose
+release notes and documentation searched (July 2026, keyed on default-font changes), no
+change to these defaults was found---in particular nothing tracking Microsoft's 2024 Aptos
+switch. Within that search scope the defaults appear stable, which cuts both ways: an
+Aspose default alone cannot narrow a document to a release window, and an Aptos-defaulted
+document is inconsistent with a factory-default Aspose
+path.\cite{as-words,as-words-2,as-words-3,as-cells,as-slides,as-pdf}
+
+Peers, for contrast: \textbf{iText} defaults to Helvetica (Base-14 metrics bundled, never
+embedded); \textbf{Apache PDFBox} has no implicit default (caller chooses);
+\textbf{python-docx} inherits Calibri 11 from its bundled Word template; \textbf{openpyxl}
+hardcodes Calibri 11 (\code{DEFAULT\_FONT} in \code{styles/fonts.py}); \textbf{GemBox}
+products default to Calibri.\cite{as-peers}
+
+% === §7 Cross-platform provenance anchors ====================================
+\section{Cross-Platform Provenance Anchors (Quick Reference)}\label{sec:anchors}
+
+Selected anchors, each typed---because ``first design'', ``first public beta'', ``first
+OS bundling'', and ``first default binding'' are different events with different
+evidential force. Anachronism reasoning must use the \textbf{earliest public availability
+of any kind, including public betas and standalone font releases}; the later anchor types
+(bundling, default binding) support consistency reasoning about producing toolchains, not
+impossibility claims. See the per-section registers for citations (Table~\ref{tab:anchors}).
+
+\begin{table*}[t]
+\centering\footnotesize
+\caption{Cross-platform provenance anchors, each typed by anchor kind.}
+\label{tab:anchors}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.235\textwidth} >{\raggedright\arraybackslash}p{0.15\textwidth} >{\raggedright\arraybackslash}p{0.26\textwidth} >{\raggedright\arraybackslash}p{0.20\textwidth}@{}}
+\toprule
+Font & Date & Anchor type & Vehicle \\
+\midrule
+Arial, Times New Roman, Courier New (TrueType) & 1992-04-06 & first OS bundling & Windows 3.1 \\
+Comic Sans MS & 1995 & first bundling (add-on pack/OEM) & Windows 95 Plus! \\
+Verdana, Georgia & 1996 & font release (IE/web-fonts program); OS-bundled by 98/2000 & Microsoft web fonts \\
+Tahoma & 1994--1995 (Office/IE); 2000-02-17 & font release; then first OS default binding & Windows 2000 \\
+Lucida Grande & 2000-09-13 & first OS bundling and default (public beta) & Mac OS X Public Beta \\
+Hiragino (on Mac) & 2001-03-24 & first Mac OS bundling (existed earlier as a Jiyukobo/SCREEN commercial family) & Mac OS X 10.0 \\
+Segoe UI & 2006-11-30 / 2007-01-30 & first OS bundling and default & Windows Vista \\
+Calibri and the ClearType six & 2006-05-23; GA 2007-01-30 & first public availability (Office 2007 Beta 2); then GA & Office 2007 / Vista \\
+Microsoft YaHei, JhengHei, Meiryo, Malgun Gothic & 2007-01-30 & first OS bundling and per-locale default & Windows Vista \\
+Droid Sans & 2008-09-23 (announced 2007-11-12) & first OS bundling and default & Android 1.0 \\
+Ubuntu Font Family & 2010-10-10 & first OS bundling and default & Ubuntu 10.10 \\
+Cantarell & 2011-04-06 & first desktop default binding (font designed 2009) & GNOME 3.0 \\
+Roboto & 2011-10-19 (SDK) / Nov 2011 (device) & first OS bundling and default & Android 4.0 \\
+Yu Gothic / Yu Mincho & 2013-10-17 & first OS bundling (existed earlier as Jiyukobo commercial faces) & Windows 8.1 \\
+Source Han Sans / Noto Sans CJK & 2014-07-15 & font release (open source) & Adobe/Google \\
+San Francisco (SF) & 2014-11-18 (developer) / 2015-04-24 (watch) / Sep 2015 (iOS 9, El Capitan) & developer release; then OS default & Apple platforms \\
+PingFang SC/TC/HK & 2015-09-16 (iOS 9) / 2015-09-30 (El Capitan) & first OS bundling and default & Apple platforms \\
+DengXian 等线 & 2015-07-29 & first OS availability (Windows 10 FOD); Office 2016 SC default binding later & Microsoft \\
+Segoe UI Variable, Cascadia Code & 2021-10-05 & first OS bundling (Cascadia Code open-sourced 2019) & Windows 11 \\
+Roboto Flex & 2022-05-05 & font release (never an AOSP default) & Google Fonts \\
+Aptos & 2023-07-13 & app default announcement, then staged rollout (M365 cloud fonts) & Microsoft 365 \\
+Adwaita Sans & 2025-03-19 & first desktop default binding (Inter, its basis, released 2016) & GNOME 48 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+% === §8 Limitations ==========================================================
+\section{Limitations}\label{sec:limitations}
+
+\begin{enumerate}[leftmargin=1.5em,itemsep=3pt]
+\item \textbf{Verification asymmetry.} Every citation carries its verification tier;
+[secondary] and UNCERTAIN labels are load-bearing. The residual weak points are
+enumerated in place: pre-2000 CJK regional-edition ship dates (Microsoft's records begin
+at Windows 2000); classic-Mac-era dates; the SF Pro rebrand year (2017, pending a Wayback
+body read); several Wayback snapshot bodies confirmed to exist but unread due to
+archive.org rate limiting during the research window; the explicitly unverified legacy
+office defaults (\S\ref{sec:wps}); and the Aspose.Cells/Aspose.PDF and
+iText/python-docx/GemBox default claims, whose specific source pages were not captured and
+which are marked UNCERTAIN in their footnotes.
+\item \textbf{Default-font attribution has no base rates.} No empirical evidence is
+offered here for how often users, organizations, templates, or converters retain factory
+defaults. Default-font matches therefore support only \emph{consistent-with} statements
+about candidate toolchains---never probabilistic attribution, and phrases elsewhere in
+this paper are calibrated accordingly. Anchor dates give \emph{terminus post quem} logic
+only in the direction ``font used before its earliest public availability $\Rightarrow$
+anachronism''; the converse direction is not symmetric.
+\item \textbf{Availability precedes release for insiders.} Public-release anchors bound
+\emph{ordinary} acquisition. Designers, foundries, beta testers, OEMs, and licensees hold
+fonts earlier; where public betas materially widen early access (Calibri), the beta date
+is the operative anchor, and \S\ref{sec:anchors} types each anchor for this reason.
+\item \textbf{Presence $\neq$ bundling} (modern OSes). Windows 10+ Feature-on-Demand,
+macOS download-on-demand, iOS 13+ user font installation, and Android's Downloadable
+Fonts all decouple a font's presence on a device from the OS release that ``shipped'' it.
+\item \textbf{Single-artifact inspections generalize narrowly.} The Office-theme
+inspection (\S\ref{sec:msoffice}) is documented with path, version, date, and SHA-256, and
+is valid for that build and channel only.
+\item \textbf{Scope.} Timelines cover public/general releases; insider builds, betas, and
+enterprise LTSC variants are noted only where they matter (Office 2007 Beta 2, iOS 7 beta
+3). ``Current'' statements are bounded by the July 2026 research window.
+\end{enumerate}
+
+% =============================================================================
+% unsrt (plain numeric) rather than unsrtnat: the paper cites numerically
+% (natbib [numbers]), and unsrtnat's a--z author-year disambiguation overflows
+% past 'z' with >26 same-author/year vendor-doc entries (e.g. Microsoft Learn),
+% emitting an unbalanced brace into the .bbl. unsrt disambiguates by number, so
+% [n] citations render identically and the .bbl stays well-formed.
+\bibliographystyle{unsrt}
+\bibliography{font-provenance}
+
+\end{document}
